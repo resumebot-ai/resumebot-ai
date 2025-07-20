@@ -1,4 +1,3 @@
-// pages/api/generate.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -23,12 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       body: JSON.stringify({
         model: 'gpt-4',
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
+        messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
         max_tokens: 1000,
       }),
@@ -42,8 +36,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const output = json.choices?.[0]?.message?.content || 'No response generated.';
     res.status(200).json({ result: output });
-  } catch (err: any) {
-    console.error(err);
+  } catch (error) {
+    console.error('API error:', error);
     res.status(500).json({ error: 'Something went wrong' });
   }
 }
