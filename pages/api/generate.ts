@@ -1,53 +1,49 @@
 // pages/api/generate.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { jobTitle, experience } = req.body;
+  const { input, type } = req.body;
 
-  if (!jobTitle || !experience) {
-    return res.status(400).json({ error: 'Missing jobTitle or experience' });
+  if (!input || !type) {
+    return res.status(400).json({ error: 'Missing input or type' });
   }
 
   try {
-    const completion = await fetch('https://api.openai.com/v1/chat/completions', {
+    const prompt = `Generate a professional ${type.toLowerCase()} based on the following:\n\n${input}`;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model: 'gpt-4',
         messages: [
           {
-            role: 'system',
-            content: 'You are a professional career assistant that generates high-quality, personalized cover letters.',
-          },
-          {
             role: 'user',
-            content: `Generate a cover letter for a "${jobTitle}" position. Here is the candidate's experience: ${experience}`,
+            content: prompt,
           },
         ],
         temperature: 0.7,
-        max_tokens: 600,
+        max_tokens: 1000,
       }),
     });
 
-    const data = await completion.json();
+    const json = await response.json();
 
-    const aiMessage = data?.choices?.[0]?.message?.content;
-    if (!aiMessage) {
-      return res.status(500).json({ error: 'No response from OpenAI' });
+    if (json.error) {
+      return res.status(500).json({ error: json.error.message });
     }
 
-    return res.status(200).json({ coverLetter: aiMessage });
-  } catch (error) {
-    console.error('OpenAI API error:', error);
-    return res.status(500).json({ error: 'Error contacting OpenAI API' });
+    const output = json.choices?.[0]?.message?.content || 'No response generated.';
+    res.status(200).json({ result: output });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong' });
   }
 }
