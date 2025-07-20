@@ -1,65 +1,76 @@
+// pages/index.tsx
+
 import { useState } from 'react';
 
 export default function Home() {
   const [input, setInput] = useState('');
-  const [type, setType] = useState('Resume');
-  const [loading, setLoading] = useState(false);
+  const [type, setType] = useState('resume');
   const [result, setResult] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleGenerate = async () => {
+    if (!input.trim()) return;
     setLoading(true);
     setResult('');
 
-    const response = await fetch('/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input, type }),
-    });
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ input, type }),
+      });
 
-    const data = await response.json();
-    setResult(data.result);
-    setLoading(false);
+      const data = await res.json();
+      setResult(data.result);
+    } catch (err) {
+      setResult('❌ Error generating output.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-10 space-y-6">
-        <h1 className="text-3xl font-bold text-center text-gray-800">📄 Resumebot AI</h1>
-
-        <div className="flex gap-4 justify-center">
-          {['Resume', 'Cover Letter', 'LinkedIn Summary'].map((option) => (
-            <button
-              key={option}
-              onClick={() => setType(option)}
-              className={`px-4 py-2 rounded-full border ${type === option ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
+    <div className="min-h-screen bg-gray-50 p-6 flex flex-col items-center justify-center">
+      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-6 space-y-6">
+        <h1 className="text-3xl font-bold text-center">ResumeBot AI</h1>
+        <p className="text-center text-gray-500">Generate a Resume or Cover Letter using AI</p>
 
         <textarea
-          rows={8}
-          placeholder="Paste your job description or resume details here..."
-          className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-300 rounded-lg p-4 h-40 resize-none"
+          placeholder="Paste your job experience, role, skills, or goals here..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
 
+        <div className="flex justify-between items-center">
+          <label className="text-sm font-medium">Choose type:</label>
+          <select
+            className="border border-gray-300 rounded-md p-2"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+          >
+            <option value="resume">Resume</option>
+            <option value="coverLetter">Cover Letter</option>
+          </select>
+        </div>
+
         <button
-          onClick={handleSubmit}
-          disabled={loading || !input.trim()}
-          className="w-full py-3 text-lg bg-blue-600 hover:bg-blue-700 text-white rounded-xl disabled:opacity-50 transition"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition duration-300"
+          onClick={handleGenerate}
+          disabled={loading}
         >
-          {loading ? 'Generating...' : `Generate ${type}`}
+          {loading ? 'Generating...' : 'Generate'}
         </button>
 
         {result && (
-          <div className="bg-gray-100 p-4 rounded-lg border border-gray-300 whitespace-pre-wrap text-gray-800">
-            {result}
+          <div className="bg-gray-100 p-4 rounded-lg border border-gray-300 whitespace-pre-wrap max-h-[400px] overflow-auto">
+            <h2 className="font-bold mb-2">Output:</h2>
+            <p>{result}</p>
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }
