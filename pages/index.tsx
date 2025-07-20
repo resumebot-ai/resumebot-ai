@@ -1,82 +1,65 @@
-// pages/index.tsx
 import { useState } from 'react';
 
 export default function Home() {
-  const [jobTitle, setJobTitle] = useState('');
-  const [experience, setExperience] = useState('');
-  const [result, setResult] = useState('');
+  const [input, setInput] = useState('');
+  const [type, setType] = useState('Resume');
   const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState('');
 
-  async function generateCoverLetter() {
+  const handleSubmit = async () => {
     setLoading(true);
     setResult('');
 
-    try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jobTitle, experience }),
-      });
-      const data = await response.json();
-      setResult(data.coverLetter || 'No response from AI.');
-    } catch (error) {
-      setResult('Error generating cover letter.');
-    }
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input, type }),
+    });
 
+    const data = await response.json();
+    setResult(data.result);
     setLoading(false);
-  }
+  };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center p-6">
-      <div className="max-w-xl w-full bg-white rounded-xl shadow-md p-8">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-6 text-center">
-          Resumebot AI — Cover Letter Generator
-        </h1>
+    <main className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-10 space-y-6">
+        <h1 className="text-3xl font-bold text-center text-gray-800">📄 Resumebot AI</h1>
 
-        <label className="block mb-4">
-          <span className="text-gray-700 font-semibold">Job Title</span>
-          <input
-            type="text"
-            className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2 focus:border-indigo-500 focus:ring-indigo-500"
-            placeholder="e.g. Software Engineer"
-            value={jobTitle}
-            onChange={(e) => setJobTitle(e.target.value)}
-          />
-        </label>
+        <div className="flex gap-4 justify-center">
+          {['Resume', 'Cover Letter', 'LinkedIn Summary'].map((option) => (
+            <button
+              key={option}
+              onClick={() => setType(option)}
+              className={`px-4 py-2 rounded-full border ${type === option ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
 
-        <label className="block mb-4">
-          <span className="text-gray-700 font-semibold">Your Experience</span>
-          <textarea
-            rows={6}
-            className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2 focus:border-indigo-500 focus:ring-indigo-500 resize-none"
-            placeholder="Describe your relevant experience..."
-            value={experience}
-            onChange={(e) => setExperience(e.target.value)}
-          />
-        </label>
+        <textarea
+          rows={8}
+          placeholder="Paste your job description or resume details here..."
+          className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+        />
 
         <button
-          disabled={loading || !jobTitle || !experience}
-          onClick={generateCoverLetter}
-          className={`w-full py-3 rounded-md text-white font-semibold transition ${
-            loading || !jobTitle || !experience
-              ? 'bg-indigo-300 cursor-not-allowed'
-              : 'bg-indigo-600 hover:bg-indigo-700'
-          }`}
+          onClick={handleSubmit}
+          disabled={loading || !input.trim()}
+          className="w-full py-3 text-lg bg-blue-600 hover:bg-blue-700 text-white rounded-xl disabled:opacity-50 transition"
         >
-          {loading ? 'Generating...' : 'Generate Cover Letter'}
+          {loading ? 'Generating...' : `Generate ${type}`}
         </button>
 
         {result && (
-          <section className="mt-8 bg-gray-100 p-4 rounded-md whitespace-pre-wrap text-gray-900 font-mono max-h-96 overflow-y-auto">
+          <div className="bg-gray-100 p-4 rounded-lg border border-gray-300 whitespace-pre-wrap text-gray-800">
             {result}
-          </section>
+          </div>
         )}
       </div>
-
-      <footer className="mt-12 text-sm text-gray-500">
-        &copy; {new Date().getFullYear()} Resumebot AI. All rights reserved.
-      </footer>
     </main>
   );
 }
