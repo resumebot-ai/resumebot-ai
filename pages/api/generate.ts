@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     console.log('Model being used: gpt-3.5-turbo');
-    console.log('OPENAI_API_KEY starts with:', process.env.OPENAI_API_KEY?.slice(0, 5));
+    console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
 
     const prompt = `Generate a professional ${type.toLowerCase()} based on the following:\n\n${input}`;
 
