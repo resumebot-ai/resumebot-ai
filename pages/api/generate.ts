@@ -12,6 +12,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    console.log('Model being used: gpt-3.5-turbo');
+    console.log('OPENAI_API_KEY starts with:', process.env.OPENAI_API_KEY?.slice(0, 5));
+
     const prompt = `Generate a professional ${type.toLowerCase()} based on the following:\n\n${input}`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -30,17 +33,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const json = await response.json();
 
-    if (json.error) {
-      return res.status(500).json({ error: json.error.message });
+    if (!response.ok || json.error) {
+      console.error('OpenAI API error:', json);
+      return res.status(500).json({ error: json.error?.message || 'OpenAI API error' });
     }
 
     const output = json.choices?.[0]?.message?.content || 'No response generated.';
-    res.status(200).json({ result: output });
-  } catch (error) {
+    return res.status(200).json({ result: output });
+  } catch (error: any) {
     console.error('API error:', error);
-    res.status(500).json({ error: 'Something went wrong' });
+    return res.status(500).json({ error: error.message || 'Something went wrong' });
   }
-  console.log('Model being used: gpt-3.5-turbo');
-console.log('OPENAI_API_KEY starts with:', process.env.OPENAI_API_KEY?.slice(0, 5));
-
 }
