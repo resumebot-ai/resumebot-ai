@@ -1,5 +1,3 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -7,14 +5,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { input, type } = req.body;
 
-  if (!input || !type) {
-    return res.status(400).json({ error: 'Missing input or type' });
+  if (!input || !type || typeof type !== 'string') {
+    return res.status(400).json({ error: 'Missing or invalid input or type' });
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    return res.status(500).json({ error: 'OpenAI API key is not configured' });
   }
 
   try {
-    console.log('Model being used: gpt-3.5-turbo');
-    console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
-
     const prompt = `Generate a professional ${type.toLowerCase()} based on the following:\n\n${input}`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
