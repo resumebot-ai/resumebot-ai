@@ -13,14 +13,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     console.log('Model being used: gpt-3.5-turbo');
-    console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+    console.log('OPENAI_API_KEY starts with:', process.env.OPENAI_API_KEY?.slice(0, 5));
 
-    const prompt = `Generate a professional ${type.toLowerCase()} based on the following:\n\n${input}`;
+    const prompt = Generate a professional ${type.toLowerCase()} based on the following:\n\n${input};
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Authorization': Bearer ${process.env.OPENAI_API_KEY},
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
