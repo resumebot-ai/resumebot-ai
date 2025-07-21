@@ -61,3 +61,16 @@ export default function Home() {
           onClick={handleGenerate}
           disabled={loading}
         >
+          {loading ? 'Generating...' : 'Generate'}
+        </button>
+
+        {result && (
+          <div className="bg-gray-100 p-4 rounded-lg border border-gray-300 whitespace-pre-wrap max-h-[400px] overflow-auto">
+            <h2 className="font-bold mb-2">Output:</h2>
+            <p>{result}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+} // <-- THIS was missing
