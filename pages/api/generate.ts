@@ -12,8 +12,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    console.log('Model being used: gpt-3.5-turbo');
-    console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+    // Rough token estimate: ~2 tokens per character (very rough)
+    const estimatedTokens = input.length * 2;
+
+    // Choose model dynamically
+    let model = 'gpt-3.5-turbo'; // default
+    if (estimatedTokens < 1000) {
+      model = 'gpt-4'; // switch to GPT-4 if input is short enough
+    }
+
+    console.log('Using model:', model);
+    console.log('OPENAI_API_KEY starts with:', process.env.OPENAI_API_KEY?.slice(0, 5));
 
     const prompt = `Generate a professional ${type.toLowerCase()} based on the following:\n\n${input}`;
 
@@ -24,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
         max_tokens: 1000,
