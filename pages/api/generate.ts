@@ -40,4 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('API error:', error);
     res.status(500).json({ error: 'Something went wrong' });
   }
+  console.log('Model being used: gpt-3.5-turbo');
+console.log('OPENAI_API_KEY starts with:', process.env.OPENAI_API_KEY?.slice(0, 5));
+
 }
